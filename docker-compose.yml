@@ -1,0 +1,46 @@
+version: '2'
+services:
+  base:
+    image: java-ms-template:sql-db
+    container_name: java-ms-template-sqldb
+    ports:
+      - "8080:8080"
+      - "7000:7000"
+    depends_on:
+      - db
+      - localstack
+    environment:
+      - DB_URL=jdbc:mariadb://maria-db:3306/books_database
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - HIBERNATE_DDL_AUTO=create
+      - AWS_ENV=dev-local
+      - SNS_ENDPOINT=http://aws-local-slack:4575
+      - SNS_TOPIC_CREATED=created-topic
+      - SNS_TOPIC_UPDATED=updated-topic
+      - SNS_TOPIC_DELETED=deleted-topic
+      - SQS_ENDPOINT=http://aws-local-slack:4576
+      - SQS_SOME_EVENT_QUEUE_NAME=some-e-queue
+      - JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,address=7000,server=y,suspend=n
+  db:
+      image: mariadb:latest
+      container_name: maria-db
+      volumes:
+        - ~/local_db/:/var/lib/mysql
+      environment:
+        - MYSQL_ROOT_PASSWORD=root
+        - MYSQL_DATABASE=books_database
+      ports:
+        - 3306:3306
+  localstack:
+    image: localstack/localstack
+    container_name: aws-local-slack
+    ports:
+      - "4575:4575"
+      - "4576:4576"
+    environment:
+      - SERVICES=sns:4575,sqs:4576
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOSTNAME_EXTERNAL=aws-local-slack
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
