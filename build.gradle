@@ -63,11 +63,12 @@ task createDockerfile(type: Dockerfile, dependsOn: build) {
 
     environmentVariable('ENV', 'dev-local')
 
-    copyFile(filesBasePath + "${jar.archiveName}", '/home/')
-    copyFile(filesBasePath + "run.sh", '/home/')
+    copyFile("${jar.archiveName}", '/home/')
+    copyFile("run.sh", '/home/')
 
-	runCommand("apt-get update && apt-get install dos2unix -y")
-	runCommand("dos2unix /home/run.sh")
+    //just to prevention a windows users
+    runCommand("apt-get update && apt-get install dos2unix -y")
+    runCommand("dos2unix /home/run.sh")
 	
     defaultCommand('sh', '/home/run.sh', "/home/${jar.archiveName}")
     
